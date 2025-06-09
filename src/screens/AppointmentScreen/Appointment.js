@@ -15,6 +15,7 @@ import ButtonComponent from '../../component/ButtonComponent';
 import AppointmentSlotComponent from '../../component/AppointmentSlotComponent';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchDoctorsById } from '../../api/Doctors';
+import ComfirmationModal from '../../component/ComfirmationModal';
 
 const { height } = Dimensions.get("screen");
 
@@ -22,7 +23,7 @@ const Appointment = ({ route }) => {
     const navigation = useNavigation();
     const { doctorId } = route?.params;
 
-    const { data } = useQuery({
+    const { data, isError, error } = useQuery({
         queryKey: ["doctorById", doctorId],
         queryFn: () => fetchDoctorsById(doctorId),
     });
@@ -36,13 +37,15 @@ const Appointment = ({ route }) => {
             desc: ""
         },
         slot: {
-            time: "",
-            date: ""
+            "time": "",
+            "date": "",
+            "reminder" : ""
         }
     });
 
     const [formError, setFormError] = useState(false);
     const [isPatientDetails, setIsPatientDetails] = useState(false);
+    const [displayModal,setDisplayModal] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -65,19 +68,26 @@ const Appointment = ({ route }) => {
     const onPressNext = useCallback(() => {
         const { name, age, phoneNumber, desc } = appointmentDetails.patient;
 
-        if (
-            name.trim() &&
-            age.trim().length > 0 &&
-            phoneNumber.trim().length === 10 &&
-            desc.trim()
-        ) {
-            setIsPatientDetails(true);
-            setFormError(false);
-            console.log("Valid:", JSON.stringify(appointmentDetails));
-        } else {
-            setFormError("Please fill the above fields.");
+        if(isPatientDetails){
+            setDisplayModal(true)
         }
-    }, [appointmentDetails]);
+        else{
+            if (
+                name.trim() &&
+                age.trim().length > 0 &&
+                phoneNumber.trim().length === 10 &&
+                desc.trim()
+            ) {
+                setIsPatientDetails(true);
+                setFormError(false);
+                console.log("Valid:", JSON.stringify(appointmentDetails));
+            } 
+            else {
+                setFormError("Please fill the above fields.");
+            }
+        }
+
+    }, [appointmentDetails, isPatientDetails]);
 
     const onChangeTextFeild = useCallback((name, value) => {
         setAppointmentDetails(prevDetails => ({
@@ -93,15 +103,18 @@ const Appointment = ({ route }) => {
         }
     }, [formError]);
 
-    const handleSlotChange = (date) => {
-        setAppointmentDetails((prev) => ({
-            ...prev,
+    const onChangeHandler = useCallback((name, value) => {
+        setAppointmentDetails(prevDetails => ({
+            ...prevDetails,
             slot: {
-                ...prev.slot,
-                date,
+                ...prevDetails.patient,
+                [name]: value
             }
-        }));
-    };
+        }))
+    },[])
+
+    console.log("Change : " ,appointmentDetails);
+    
 
     return (
         <KeyboardAvoidingView
@@ -175,6 +188,7 @@ const Appointment = ({ route }) => {
 
                     {isPatientDetails && (
                         <AppointmentSlotComponent
+                        onChangeHandler={onChangeHandler}
                             // selectedDate={appointmentDetails.slot.date}
                             // onSelectDate={handleSlotChange}
                         />
@@ -190,6 +204,7 @@ const Appointment = ({ route }) => {
                         onPress={onPressNext}
                     />
                 </View>
+                <ComfirmationModal modalText={`You booked an appointment with ${data.name} on ${appointmentDetails?.slot?.date} at ${appointmentDetails?.slot?.time}.`} visible={displayModal} onClose={() => setDisplayModal(false)}/>
             </View>
         </KeyboardAvoidingView>
     );

@@ -1,5 +1,5 @@
 import { Dimensions, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import dayjs from 'dayjs';
 import { Calendar } from 'react-native-calendars';
 import SectionHeaderComponent from './SectionHeaderComponent';
@@ -27,7 +27,7 @@ const reminderSlot = [
     }
 ]
 
-const AppointmentSlotComponent = () => {
+const AppointmentSlotComponent = ({ onChangeHandler }) => {
     const today = dayjs().format("YYYY-MM-DD");
     const maxDate = dayjs().add(14, "day").format("YYYY-MM-DD");
 
@@ -35,15 +35,28 @@ const AppointmentSlotComponent = () => {
     const [selectedSlot, setSelectedSlot] = useState(0);
     const [selectedRemindTime, setSeelectedRemindTime] = useState(0);
 
+    const onChangeDate = useCallback((day) => {
+        setSelectDate(day.dateString);
+        onChangeHandler && onChangeHandler("date", day.dateString)
+    }, [onChangeHandler]);
+
+    const onChangeSlot = useCallback((index) => {
+        setSelectedSlot(index);
+        onChangeHandler && onChangeHandler('time', timeSlots[index].value);
+    }, [onChangeHandler]);
+
+    const onChangeReminder = useCallback((index) => {
+        setSeelectedRemindTime(index);
+        onChangeHandler && onChangeHandler('reminder', reminderSlot[index].value);
+    }, [onChangeHandler]);
+
     return (
         <ScrollView style={styles.container}>
             {/* <Text style={styles.heading}>Select Appointment Date</Text> */}
             <Calendar
                 minDate={today}
                 maxDate={maxDate}
-                onDayPress={day => {
-                    setSelectDate(day.dateString);
-                }}
+                onDayPress={onChangeDate}
                 markedDates={{
                     [selectedDate]: {
                         selected: true,
@@ -60,13 +73,16 @@ const AppointmentSlotComponent = () => {
                 }}
             />
 
+
+
+
             <SectionHeaderComponent title={"Available Time Slots"} />
             {/* Time slots */}
             <View>
                 <FlatList
                     data={timeSlots}
                     keyExtractor={(item, i) => i.toString()}
-                    renderItem={({ item, index }) => <SlotRender onChange={(index) => setSelectedSlot(index)} selected={selectedSlot} name={item.time} description={item.value} key={index} index={index} />}
+                    renderItem={({ item, index }) => <SlotRender onChange={(index) => onChangeSlot(index)} selected={selectedSlot} name={item.time} description={item.value} key={index} index={index} />}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={{ paddingVertical: 10, paddingHorizontal: 10 }}
@@ -75,7 +91,7 @@ const AppointmentSlotComponent = () => {
 
             <Text style={{ padding: 10, fontSize: 15, fontWeight: "600" }}>{"Reminder me before"}</Text>
             <View style={styles.timigContainer}>
-                {reminderSlot.map((item, i) => <SlotRender onChange={(index) => setSeelectedRemindTime(index)} selected={selectedRemindTime} name={item.title} description={item.value} key={i} index={i} />)}
+                {reminderSlot.map((item, i) => <SlotRender onChange={(index) => onChangeReminder(index)} selected={selectedRemindTime} name={item.title} description={item.value} key={i} index={i} />)}
             </View>
 
         </ScrollView>
