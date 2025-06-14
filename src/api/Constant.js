@@ -7,3 +7,9 @@ export const Api_Paths = {
     APPOINTMENTS: "api/appointments",
     AUTH_LOGIN: "api/auth/login",
 }
+
+export const getHeaders = () => {
+    return {
+        'Authorization': `Bearer `
+    }
+}

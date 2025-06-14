@@ -29,7 +29,7 @@ const OtpVarification = ({ route }) => {
   // Function to handle otp filled in OtpInput
   const onOtpFilled = useCallback((text) => {
     console.log('OTP Filled:', text);
-    navigate("Home"); // Navigate to Home screen after OTP is filled
+    navigate("TabNavigator"); // Navigate to Home screen after OTP is filled
   }, [])
   return (
     <View style={styles.container}>

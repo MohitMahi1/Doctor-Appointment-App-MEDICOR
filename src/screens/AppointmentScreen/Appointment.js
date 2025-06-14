@@ -9,13 +9,16 @@ import {
     Platform,
 } from 'react-native';
 import React, { useCallback, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import DoctorCardComponent from '../../component/DoctorCardComponent';
 import ButtonComponent from '../../component/ButtonComponent';
 import AppointmentSlotComponent from '../../component/AppointmentSlotComponent';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { fetchDoctorsById } from '../../api/Doctors';
 import ComfirmationModal from '../../component/ComfirmationModal';
+import { createAppointment } from '../../api/Appoinment';
+import { useDispatch } from 'react-redux';
+import { setAppointment } from '../../store/features/AppointmentRedux';
 
 const { height } = Dimensions.get("screen");
 
@@ -28,6 +31,19 @@ const Appointment = ({ route }) => {
         queryFn: () => fetchDoctorsById(doctorId),
     });
 
+    const dispatch = useDispatch();
+    const mutation = useMutation({
+        mutationFn:createAppointment,
+        onSuccess:(data) => {
+            dispatch(setAppointment(data));
+            setDisplayModal(true);
+        },
+        onError:(err) => {
+            console.log(err);
+            
+        }
+    })
+
     const [descHeight, setDescHeight] = useState(height * 0.07);
     const [appointmentDetails, setAppointmentDetails] = useState({
         patient: {
@@ -39,13 +55,14 @@ const Appointment = ({ route }) => {
         slot: {
             "time": "",
             "date": "",
-            "reminder" : ""
-        }
+            "reminder": ""
+        },
+        doctor:doctorId
     });
 
     const [formError, setFormError] = useState(false);
     const [isPatientDetails, setIsPatientDetails] = useState(false);
-    const [displayModal,setDisplayModal] = useState(false);
+    const [displayModal, setDisplayModal] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -67,11 +84,18 @@ const Appointment = ({ route }) => {
 
     const onPressNext = useCallback(() => {
         const { name, age, phoneNumber, desc } = appointmentDetails.patient;
+        const { date, time } = appointmentDetails.slot;
 
-        if(isPatientDetails){
-            setDisplayModal(true)
-        }
-        else{
+        if (isPatientDetails) {
+
+            // Check if date or time is missing
+            if (!date || !time) {
+                alert("Please select a date and time slot.");
+                return;
+            }
+            mutation.mutate(appointmentDetails);
+            // setDisplayModal(true);
+        } else {
             if (
                 name.trim() &&
                 age.trim().length > 0 &&
@@ -80,14 +104,12 @@ const Appointment = ({ route }) => {
             ) {
                 setIsPatientDetails(true);
                 setFormError(false);
-                console.log("Valid:", JSON.stringify(appointmentDetails));
-            } 
-            else {
+            } else {
                 setFormError("Please fill the above fields.");
             }
         }
-
     }, [appointmentDetails, isPatientDetails]);
+
 
     const onChangeTextFeild = useCallback((name, value) => {
         setAppointmentDetails(prevDetails => ({
@@ -107,14 +129,14 @@ const Appointment = ({ route }) => {
         setAppointmentDetails(prevDetails => ({
             ...prevDetails,
             slot: {
-                ...prevDetails.patient,
+                ...prevDetails.slot,
                 [name]: value
             }
         }))
-    },[])
+    }, [])
 
-    console.log("Change : " ,appointmentDetails);
-    
+    console.log("Change : ", appointmentDetails);
+
 
     return (
         <KeyboardAvoidingView
@@ -188,9 +210,9 @@ const Appointment = ({ route }) => {
 
                     {isPatientDetails && (
                         <AppointmentSlotComponent
-                        onChangeHandler={onChangeHandler}
-                            // selectedDate={appointmentDetails.slot.date}
-                            // onSelectDate={handleSlotChange}
+                            onChangeHandler={onChangeHandler}
+                        // selectedDate={appointmentDetails.slot.date}
+                        // onSelectDate={handleSlotChange}
                         />
                     )}
                 </ScrollView>
@@ -204,7 +226,12 @@ const Appointment = ({ route }) => {
                         onPress={onPressNext}
                     />
                 </View>
-                <ComfirmationModal modalText={`You booked an appointment with ${data.name} on ${appointmentDetails?.slot?.date} at ${appointmentDetails?.slot?.time}.`} visible={displayModal} onClose={() => setDisplayModal(false)}/>
+                <ComfirmationModal
+                    modalText={`You booked an appointment with ${data?.name || 'Doctor'} on ${appointmentDetails?.slot?.date || 'N/A'} at ${appointmentDetails?.slot?.time || 'N/A'}.`}
+                    visible={displayModal}
+                    onClose={() => setDisplayModal(false)}
+                />
+
             </View>
         </KeyboardAvoidingView>
     );

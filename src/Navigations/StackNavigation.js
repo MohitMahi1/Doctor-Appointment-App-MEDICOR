@@ -10,17 +10,18 @@ import SearchScreen from '../screens/HomeScreens/SearchScreen'
 import DoctorListComponent from '../component/DoctorListComponent'
 import DoctorDetails from '../screens/DoctorDeitails/DoctorDetails'
 import Appointment from '../screens/AppointmentScreen/Appointment'
+import BottomTabNavigation from './BottomTabNavigator/BottomTabNavigation'
 
 
 const Stack = createNativeStackNavigator();
 const StackNavigation = () => {
     return (
         <NavigationContainer >
-            <Stack.Navigator initialRouteName='Home'>
+            <Stack.Navigator>
                 <Stack.Screen name="Onboarding" component={Onboarding} options={{ headerShown: false }} />
                 <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
                 <Stack.Screen name="OtpVarification" component={OtpVarification} options={{title: "OTP Verification"}} />
-                <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
+                <Stack.Screen name='TabNavigator' component={BottomTabNavigation} options={{ headerShown: false }} />
                 <Stack.Screen name='SearchScreen' component={SearchScreen} options={{headerShown: false}} />
                 <Stack.Screen name='DoctorListComponent' component={DoctorListComponent} options={{title:"Doctor List"}} />
                 <Stack.Screen name='DoctorDetails' component={DoctorDetails} options={{title:"Doctor Details"}} />

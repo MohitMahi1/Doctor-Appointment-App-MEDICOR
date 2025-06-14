@@ -31,9 +31,9 @@ const AppointmentSlotComponent = ({ onChangeHandler }) => {
     const today = dayjs().format("YYYY-MM-DD");
     const maxDate = dayjs().add(14, "day").format("YYYY-MM-DD");
 
-    const [selectedDate, setSelectDate] = useState(0)
-    const [selectedSlot, setSelectedSlot] = useState(0);
-    const [selectedRemindTime, setSeelectedRemindTime] = useState(0);
+    const [selectedDate, setSelectDate] = useState(null)
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [selectedRemindTime, setSeelectedRemindTime] = useState(null);
 
     const onChangeDate = useCallback((day) => {
         setSelectDate(day.dateString);
@@ -82,7 +82,16 @@ const AppointmentSlotComponent = ({ onChangeHandler }) => {
                 <FlatList
                     data={timeSlots}
                     keyExtractor={(item, i) => i.toString()}
-                    renderItem={({ item, index }) => <SlotRender onChange={(index) => onChangeSlot(index)} selected={selectedSlot} name={item.time} description={item.value} key={index} index={index} />}
+                    renderItem={({ item, index }) =>
+                        <SlotRender
+                            onChange={() => onChangeSlot(index)}
+                            selected={selectedSlot}
+                            name={item.time}
+                            description={item.value}
+                            key={index}
+                            index={index}
+                        />
+                    }
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={{ paddingVertical: 10, paddingHorizontal: 10 }}
@@ -91,7 +100,16 @@ const AppointmentSlotComponent = ({ onChangeHandler }) => {
 
             <Text style={{ padding: 10, fontSize: 15, fontWeight: "600" }}>{"Reminder me before"}</Text>
             <View style={styles.timigContainer}>
-                {reminderSlot.map((item, i) => <SlotRender onChange={(index) => onChangeReminder(index)} selected={selectedRemindTime} name={item.title} description={item.value} key={i} index={i} />)}
+                {reminderSlot.map((item, i) => (
+                    <SlotRender
+                        onChange={() => onChangeReminder(i)}
+                        selected={selectedRemindTime}
+                        name={item.title}
+                        description={item.value}
+                        key={i}
+                        index={i}
+                    />
+                ))}
             </View>
 
         </ScrollView>

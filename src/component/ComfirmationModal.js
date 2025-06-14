@@ -9,7 +9,7 @@ const ConfirmationModal = ({ visible, onClose, modalText }) => {
   const navigation = useNavigation();
 
   const onPress = useCallback(() => {
-    navigation.navigate("Home");
+    navigation.navigate("TabNavigator");
     onClose && onClose();
   }, [onClose, navigation]);
 

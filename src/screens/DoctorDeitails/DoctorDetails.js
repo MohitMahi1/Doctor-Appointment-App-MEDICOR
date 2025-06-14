@@ -12,13 +12,12 @@ const DoctorDetails = ({ route }) => {
 
   const navigation = useNavigation();
 
-
   const { doctorId } = route?.params;
 
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["doctorById", doctorId],
     queryFn: () => fetchDoctorsById(doctorId),
-  })
+  });
   return (
     <View style={{flex:1}}>
       <ScrollView style={styles.container}>
